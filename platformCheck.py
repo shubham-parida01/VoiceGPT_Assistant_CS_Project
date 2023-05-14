@@ -9,6 +9,4 @@ def check_operating_system():
     else:
         return "Unknown"
 
-# Check the operating system
-operating_system = check_operating_system()
-print("Operating System:", operating_system)
+
