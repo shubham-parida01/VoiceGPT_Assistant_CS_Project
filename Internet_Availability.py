@@ -8,8 +8,4 @@ def check_internet_connection():
     except socket.error:
         return False
 
-# Check internet connection
-if check_internet_connection():
-    print("Internet connection is available.")
-else:
-    print("No internet connection.")
+
