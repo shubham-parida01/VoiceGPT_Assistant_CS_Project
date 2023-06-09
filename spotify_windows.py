@@ -47,7 +47,7 @@ def open_spotify_and_play_song(song_name):
         print("Spotify not found on the system")
 
 def music_play(song_name):
-    if not check_application_installed('Spotify'):
+    if check_application_installed('Spotify'):
         open_spotify_and_play_song(song_name)
     else:
         open_chrome_and_play_song(song_name)
