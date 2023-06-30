@@ -123,8 +123,8 @@ class MainWindow(QMainWindow):
             b = self.text.split()
             c = len(b[0])
             print(self.text)
-            if self.text.startswith(("map", "maps", "Maps", "Map")):
-                maps.open_maps(self.text[c + 1::])
+            if self.text.startswith(("direction to","Direction to","directions to","Directions to")):
+                maps.open_maps(self.text[c + 2::])
 
             elif self.text.startswith(("Temperature in", "temperature in")):
                 temperature = get_temp.get_current_temperature(self.text[c + 3::])
@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
                 self.main.label.repaint()
                 self.speaker(self.text)
 
-            elif self.text.startswith(("Google", "google")):
+            elif self.text.startswith(("Search", "search")):
                 ws.search_on_google(self.text[c + 1::])
 
             elif self.text in ("Tell me a joke", "tell me a joke"):
@@ -166,13 +166,15 @@ class MainWindow(QMainWindow):
                 self.main.label.repaint()
                 self.speaker(self.text)
 
-            elif self.text in ("Whats the time","whats the time","time","tell me the time"):
+            elif self.text in ("What's the time","what's the time","time","tell me the time"):
                 Time = datetime.datetime.now().strftime("%H:%M:%S")   
                 self.text=f"Current time is {Time}"
+                self.speaker(self.text)
 
-            elif self.text in ("Whats the date","whats the date","date","tell me the date","todays date"):
+            elif self.text in ("What's the date","what's the date","date","tell me the date","today's date"):
                 date = datetime.date.today()  
-                self.text=f"Todays date is {date}"
+                self.text=f"Today's date is {date}"
+                self.speaker(self.text)
 
             elif self.text in ("Take a photo","take a photo","camera"):
                 print("works")
@@ -209,8 +211,6 @@ class MainWindow(QMainWindow):
         if system == "Windows":
             return "Windows"
         elif system == "Darwin":
-            from pydub import AudioSegment
-            from pydub.playback import play
             return "macOS"
         else:
             return "Unknown"
@@ -229,6 +229,8 @@ class MainWindow(QMainWindow):
             engine.runAndWait()
 
         elif self.check_os() == "macOS":
+            from pydub import AudioSegment
+            from pydub.playback import play
             tts = gTTS(s, lang='en')
             temp_file = "temp.mp3"
             tts.save(temp_file)
