@@ -229,13 +229,10 @@ class MainWindow(QMainWindow):
             engine.runAndWait()
 
         elif self.check_os() == "macOS":
-            from pydub import AudioSegment
-            from pydub.playback import play
             tts = gTTS(s, lang='en')
             temp_file = "temp.mp3"
             tts.save(temp_file)
-            audio = AudioSegment.from_file(temp_file, format="mp3")
-            play(audio)
+            os.system(f"afplay {temp_file}")
             os.remove(temp_file)
 
 
