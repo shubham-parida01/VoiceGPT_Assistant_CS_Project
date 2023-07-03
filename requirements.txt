@@ -1,0 +1,10 @@
+gtts
+PyQt5
+pyttsx3
+SpeechRecognition
+pyjokes
+datetime
+openai
+pydub
+pyautogui
+pyowm
