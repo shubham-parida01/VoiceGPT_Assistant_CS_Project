@@ -155,27 +155,23 @@ class MainWindow(QMainWindow):
     def closewindow(self):#close button
         exit()
 
-    def display(self):
-        self.main.label.setText(self.text)
-        self.main.label.repaint()
-
     def speech_rec(self):
         self.gif_start()
         r = sr.Recognizer()
         with sr.Microphone() as source:
             try:
                 audio = r.listen(source,timeout=10)
-                #time.sleep(4)
+                time.sleep(3)
                 self.main.label_2.hide()
                 self.main.gif_label.hide()
                 self.main.pushButton_2.hide()
-                #self.main.label_3.show()
+                self.main.label_3.show()
+
             except sr.WaitTimeoutError:
                 self.text="Try Again!"
                 self.main.label_2.hide()
                 self.main.gif_label.show()
                 self.main.pushButton_2.show()
-                #self.main.label_3.show()
                 return None
         audio_rec=r.recognize_google(audio).capitalize()
         self.text =f"You said: {audio_rec}"
@@ -191,28 +187,23 @@ class MainWindow(QMainWindow):
                 self.text = f"The Temperature in{(audio_rec[c + 3::]).capitalize()} is {temperature} Celsius."
                 self.main.label.setText(self.text)
                 self.speaker(self.text)
-
             elif audio_rec.startswith(("Play")) and self.check_os() == "Windows":
-
                 sw.music_play(self.text[c + 1::])
                 self.text = f"Playing {self.text[c + 1::]}"
                 self.main.label.setText(self.text)
-                self.speaker(self.text)
 
             elif audio_rec.startswith(("Play")) and self.check_os() == "macOS":
-
                 sm.play_song(self.text[c + 1::])
                 self.text = f"Playing {self.text[c + 1::]}"
                 self.main.label.setText(self.text)
-                self.speaker(self.text)
 
             elif audio_rec.startswith(("Search")):
                 ws.search_on_google(audio_rec[c + 1::])
 
             elif audio_rec in ("Tell me a joke"):
-                self.text = pyjokes.get_joke("en","neutral")
+                text = pyjokes.get_joke("en","neutral")
                 self.main.label.setText(self.text)
-                self.speaker(self.text)
+                self.speaker(text)
 
             elif audio_rec.startswith(("Open")):
                 a = audio_rec[c + 1::]
@@ -266,6 +257,10 @@ class MainWindow(QMainWindow):
         self.main.gif_label.show()
         self.main.pushButton_2.show()
 
+    def display(self):
+        self.main.label.setText(self.text)
+        self.main.label.repaint()
+
     def check_os(self):#checks os 
         system = platform.system()
         if system == "Windows":
@@ -297,7 +292,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    #window = SplashScreen()
-    main=MainWindow()
-    main.show()
+    window = SplashScreen()
+    '''main=MainWindow()
+    main.show()'''
     sys.exit(app.exec())

@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_4.hide()
 
-        self.gif_path = "Loading_icon4.gif"
+        self.gif_path = "Loading_icon.gif"
         self.anim = QMovie(self.gif_path)
         
         self.gif_label.setGeometry(310, 140,170,170)
@@ -172,10 +172,19 @@ class Ui_MainWindow(object):
         self.anim.start()
         
         self.label_2=QLabel(self.frame)
-        self.label_2.setGeometry(350, 140,100,167)
+        self.label_2.setGeometry(350, 190,60,100)
         self.label_2.setAlignment(Qt.AlignCenter)
         self.label_2.setStyleSheet("background-image : url(mic_2.png);")
         self.label_2.hide()
+        
+        self.label_3=QLabel(self.frame)
+        self.label_3.setGeometry(310, 180,154,114)
+        self.label_3.setAlignment(Qt.AlignCenter)
+        self.path= "speaker.gif"
+        self.speak = QMovie(self.path)
+        self.label_3.setMovie(self.speak)
+        self.speak.start()
+        self.label_3.hide()
 
         self.pushButton_2.setGeometry(self.gif_label.geometry())
         self.pushButton_2.setText("")
