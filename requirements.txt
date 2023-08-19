@@ -10,4 +10,4 @@ pydub==0.25.1
 pyttsx3==2.90
 pyautogui==0.9.53
 pyaudio
->>>>>>> 357f00f (updated)
+
