@@ -1,14 +1,13 @@
 import sys
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QTimer, QThread
+from PyQt5.QtGui import QColor, QMovie
+from PyQt5.QtWidgets import QMainWindow, QApplication, QStackedLayout,QGraphicsDropShadowEffect
 import socket
 import speech_recognition as sr
 import pyttsx3
 import platform
 from gtts import gTTS
-from PyQt5.QtGui import QMovie
 import threading
 from threading import Thread
 import os
@@ -17,7 +16,7 @@ import datetime
 import cv2
 import time
 
-#from main_window import Ui_MainWindow
+from main_window import Ui_MainWindow
 from splash_ui import Ui_SplashScreen
 import get_temp
 import maps
@@ -26,7 +25,7 @@ import spotify_windows as sw
 import spotify_mac as sm
 import web_search as ws
 import Open_apps as oa
-from tr import Ui_MainWindow
+
 
 counter = 0
 
@@ -49,9 +48,9 @@ class SplashScreen(QMainWindow):
         self.timer = QTimer()  # timer for progress bar
         self.timer.timeout.connect(self.update)
         self.timer.start(20)  # timeout for 20 milliseconds
-        QtCore.QTimer.singleShot(0, lambda: self.splash.label_2.setText("Shubham"))
-        QtCore.QTimer.singleShot(2000, lambda: self.splash.label_2.setText("Bhavya"))#changes text after given time
-        QtCore.QTimer.singleShot(3000, lambda: self.splash.label_2.setText("Ashmit"))
+        QtCore.QTimer.singleShot(0, lambda: self.splash.mic_label.setText("Shubham"))
+        QtCore.QTimer.singleShot(4000, lambda: self.splash.mic_label.setText("Bhavya"))#changes text after given time
+        QtCore.QTimer.singleShot(3000, lambda: self.splash.mic_label.setText("Ashmit"))
 
         self.show()
         self.main = MainWindow()
@@ -73,10 +72,16 @@ class SplashScreen(QMainWindow):
                 self.main.show()
             else:
                 self.main.show()
-                self.main.main.pushButton_2.setEnabled(False)
+                self.main.main.listening_button.setEnabled(False)
                 self.main.text = "No internet connection"
         counter += 1
+class ListeningThread(QThread):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
 
+    def run(self):
+        self.parent.speech_rec()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -102,46 +107,61 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.display)
         self.timer.start(100)
 
-        self.main.pushButton.pressed.connect(self.closewindow)
-        self.main.pushButton_2.pressed.connect(self.listening)
-        self.main.pushButton_3.pressed.connect(self.help)
-        self.main.pushButton_4.pressed.connect(self.close_commands)
+        self.main.main_close.pressed.connect(self.closewindow)
+        self.main.listening_button.pressed.connect(self.listening)
+        self.main.help_button.pressed.connect(self.help)
+        self.main.help_close.pressed.connect(self.close_commands)
         self.text = "Hi! What can I do for you?"
 
         layout=QStackedLayout()
+        layout.addWidget(self.main.help_close)
+        layout.addWidget(self.main.speaker_label)
+        layout.addWidget(self.main.mic_label)
         layout.addWidget(self.main.gif_label)
-        layout.addWidget(self.main.pushButton_2)
-        layout.setCurrentIndex(1)
+        layout.addWidget(self.main.listening_button)
+        layout.addWidget(self.main.main_close)
+        layout.addWidget(self.main.help_button)
+        layout.setCurrentIndex(4)
         self.setLayout(layout)
         #self.main.anim.stop()
         self.main.gif_label.show()
+        self.main.main_close.show()
+        self.main.help_button.show()
 
     def gif_start(self):
         self.main.anim.start()
 
     def close_commands(self):
         self.main.scrollArea.setGeometry(40, 0, 695, 190)
-        self.main.pushButton_4.hide()
+        self.main.help_close.hide()
         self.main.gif_label.show()
-        self.main.pushButton_2.show()
+        self.main.listening_button.show()
         self.text="Hi! What can I do for you?"
-        #self.main.label.setText("Hi! What can I do for you?")
+        #self.main.main_label.setText("Hi! What can I do for you?")
         
     def listening(self):
         self.main.gif_label.hide()
-        self.main.label_2.show()
+        self.main.mic_label.show()
         self.text = "Listening..."
-        thread = threading.Thread(target=self.speech_rec)
-        thread.start()
+        self.thread = ListeningThread(self)
+        self.thread.finished.connect(self.thread_finished)
+        self.thread.start()
+
+    def thread_finished(self):
+        self.main.mic_label.hide()
+        self.main.speaker_label.hide()
+        self.main.gif_label.show()
+        self.main.listening_button.show()
+        self.main.scrollArea.setGeometry(40, 0, 695, 135)
 
     def help(self):#help button
-        self.main.pushButton_4.show()
+        self.main.help_close.show()
         self.main.gif_label.hide()
-        self.main.pushButton_2.hide()
+        self.main.listening_button.hide()
         self.main.scrollArea.setGeometry(40, 0, 695, 220)
         self.text= """COMMANDS
         Maps: Direction to <destination>
-        Temperature: what is the temperature
+        Weather: What's the weather in <location> or What's the weather
         Music: Play <song_name>
         Google: Search <your_query>
         Joke: Tell me a joke 
@@ -150,7 +170,7 @@ class MainWindow(QMainWindow):
         Open apps:Open <app_name>
         Click a Photo: Take my photo
         ChatGpt: <your_query>"""
-        self.main.label.setText(self.text)
+        self.main.main_label.setText(self.text)
 
     def closewindow(self):#close button
         exit()
@@ -161,56 +181,65 @@ class MainWindow(QMainWindow):
         with sr.Microphone() as source:
             try:
                 audio = r.listen(source,timeout=10)
-                time.sleep(3)
-                self.main.label_2.hide()
+                time.sleep(1)
+                self.main.mic_label.hide()
                 self.main.gif_label.hide()
-                self.main.pushButton_2.hide()
-                self.main.label_3.show()
+                self.main.listening_button.hide()
+                self.main.speaker_label.show()
 
             except sr.WaitTimeoutError:
-                self.text="Try Again!"
-                self.main.label_2.hide()
-                self.main.gif_label.show()
-                self.main.pushButton_2.show()
+                self.error()
                 return None
         audio_rec=r.recognize_google(audio).capitalize()
         self.text =f"You said: {audio_rec}"
         try:
             b = audio_rec.split()
-            c = len(b[0])
+            c = len(b)
             print(audio_rec)
             if audio_rec.startswith(("direction to","Direction to","directions to","Directions to")):
-                maps.open_maps(audio_rec[c + 2::])
+                maps.open_maps(audio_rec[c + 2::].strip())
 
-            elif audio_rec.lower().startswith(("what is the temperature ")):
-                temperature = get_temp.get_current_temperature()[0]
-                weather = get_temp.get_current_temperature()[1]
-                self.text = f"The Temperature in{(audio_rec[c + 3::]).capitalize()} is {temperature} Celsius , and its weather is {weather}"
-                self.main.label.setText(self.text)
+            elif audio_rec.startswith(("What's the temperature in","Temperature ","What's the weather in")):
+                a=b.index("in")
+                print(b[a + 1::])
+                place=str(b[a + 1::])
+                weather=get_temp.get_current_temperature_place(place)[0]
+                temperature = get_temp.get_current_temperature_place(place)[1]
+                self.text = f"The current Weather in {place.capitalize()} is {weather} and the Temperature is {temperature} Celsius."
+                self.main.main_label.setText(self.text)
                 self.speaker(self.text)
+
+            elif audio_rec.startswith(("What's the weather","Temperature","What's the temperature")):
+                weather=get_temp.get_current_temperature()[0]
+                temperature=get_temp.get_current_temperature()[1]
+                place=get_temp.get_current_temperature()[2].capitalize()
+                self.text=f"The current Weather in {place} is {weather} and temperature is {temperature} Celsius."
+                self.main.main_label.setText(self.text)
+                self.speaker(self.text)
+
             elif audio_rec.startswith(("Play")) and self.check_os() == "Windows":
-                sw.music_play(self.text[c + 1::])
-                self.text = f"Playing {self.text[c + 1::]}"
-                self.main.label.setText(self.text)
+                sw.music_play(audio_rec[1::].strip())
+                self.text = f"Playing {audio_rec[c + 1::]}"
+                self.main.main_label.setText(self.text)
 
             elif audio_rec.startswith(("Play")) and self.check_os() == "macOS":
-                sm.play_song(self.text[c + 1::])
-                self.text = f"Playing {self.text[c + 1::]}"
-                self.main.label.setText(self.text)
+                sm.play_song(audio_rec[1::].strip())
+                self.text = f"Playing {self.text[1::]}"
+                self.main.main_label.setText(self.text)
 
             elif audio_rec.startswith(("Search")):
-                ws.search_on_google(audio_rec[c + 1::])
+                ws.search_on_google(audio_rec[1::].strip())
 
             elif audio_rec in ("Tell me a joke"):
                 text = pyjokes.get_joke("en","neutral")
-                self.main.label.setText(self.text)
+                self.main.main_label.setText(self.text)
                 self.speaker(text)
 
             elif audio_rec.startswith(("Open")):
                 a = audio_rec[c + 1::]
                 oa.open_application(audio_rec[c + 1::])
                 self.text = f"Opening {a.capitalize()}"
-                self.main.label.setText(self.text)
+                self.main.main_label.setText(self.text)
                 self.speaker(self.text)
 
             elif audio_rec in ("What's the time","Tell me the time"):
@@ -240,27 +269,35 @@ class MainWindow(QMainWindow):
                         break
                     c+=1
 
-
             else:
                 answer = ChatGpt.chat_gpt(audio_rec)
                 self.text = answer
-                self.main.label.setText(self.text)
+                self.main.main_label.setText(self.text)
                 self.speaker(self.text)
+                
             
         except sr.UnknownValueError:
-            self.text = "Try Again!"
-            self.main.label.repaint()
+            self.error
+            print("works")
             
         except sr.RequestError as e:
             self.text = "Could not request results from Google Speech Recognition service" + str(e)
+        self.repeat()
+    def repeat(self):
         self.main.scrollArea.setGeometry(40, 0, 695, 135)
-        self.main.label_2.hide()
+        self.main.speaker_label.hide()
+        self.main.mic_label.hide()
         self.main.gif_label.show()
-        self.main.pushButton_2.show()
+        self.main.listening_button.show()
 
+    def error(self):
+        self.text="Try Again!"
+        self.main.mic_label.hide()
+        self.main.gif_label.show()
+        self.main.listening_button.show()
     def display(self):
-        self.main.label.setText(self.text)
-        self.main.label.repaint()
+        self.main.main_label.setText(self.text)
+        self.main.main_label.repaint()
 
     def check_os(self):#checks os 
         system = platform.system()
@@ -288,12 +325,10 @@ class MainWindow(QMainWindow):
             audio = AudioSegment.from_file(temp_file, format="mp3")
             play(audio)
             os.remove(temp_file)
-        
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = SplashScreen()
+    #window = SplashScreen()
     main=MainWindow()
     main.show()
     sys.exit(app.exec())
