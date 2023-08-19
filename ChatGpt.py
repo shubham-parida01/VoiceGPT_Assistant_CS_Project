@@ -1,6 +1,6 @@
 import openai
 
-openai.api_key = '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'
+openai.api_key = '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'
 
 
 def chat_gpt(prompt):
@@ -10,5 +10,7 @@ def chat_gpt(prompt):
                    'content': prompt}]
     )
     return response["choices"][0]['message']['content']
+
+print(chat_gpt('WHat are you ?'))
 
 
