@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         self.main.scrollArea.setGeometry(40, 0, 695, 220)
         self.text= """COMMANDS
         Maps: Direction to <destination>
-        Temperature: Temprature in <location>
+        Temperature: what is the temperature
         Music: Play <song_name>
         Google: Search <your_query>
         Joke: Tell me a joke 
@@ -182,9 +182,10 @@ class MainWindow(QMainWindow):
             if audio_rec.startswith(("direction to","Direction to","directions to","Directions to")):
                 maps.open_maps(audio_rec[c + 2::])
 
-            elif audio_rec.startswith(("Temperature in")):
-                temperature = get_temp.get_current_temperature(audio_rec[c + 3::])
-                self.text = f"The Temperature in{(audio_rec[c + 3::]).capitalize()} is {temperature} Celsius."
+            elif audio_rec.lower().startswith(("what is the temperature ")):
+                temperature = get_temp.get_current_temperature()[0]
+                weather = get_temp.get_current_temperature()[1]
+                self.text = f"The Temperature in{(audio_rec[c + 3::]).capitalize()} is {temperature} Celsius , and its weather is {weather}"
                 self.main.label.setText(self.text)
                 self.speaker(self.text)
             elif audio_rec.startswith(("Play")) and self.check_os() == "Windows":
@@ -293,6 +294,6 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = SplashScreen()
-    '''main=MainWindow()
-    main.show()'''
+    main=MainWindow()
+    main.show()
     sys.exit(app.exec())
