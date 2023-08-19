@@ -77,7 +77,6 @@ class ListeningThread(QThread):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-
     def run(self):
         self.parent.speech_rec()
 
