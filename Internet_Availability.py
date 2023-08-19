@@ -7,5 +7,4 @@ def check_internet_connection():
         return True
     except socket.error:
         return False
-
-
+    
