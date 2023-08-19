@@ -26,9 +26,7 @@ import spotify_mac as sm
 import web_search as ws
 import Open_apps as oa
 
-
 counter = 0
-
 class SplashScreen(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
