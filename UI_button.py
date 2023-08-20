@@ -27,6 +27,7 @@ import web_search as ws
 import Open_apps as oa
 
 counter = 0
+
 class SplashScreen(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -77,6 +78,7 @@ class ListeningThread(QThread):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+
     def run(self):
         self.parent.speech_rec()
 
@@ -192,17 +194,16 @@ class MainWindow(QMainWindow):
         try:
             b = audio_rec.split()
             c = len(b)
-            print(audio_rec)
             if audio_rec.startswith(("direction to","Direction to","directions to","Directions to")):
                 maps.open_maps(audio_rec[c + 2::].strip())
 
-            elif audio_rec.startswith(("What's the temperature in","Temperature ","What's the weather in")):
+            elif audio_rec.startswith(("What's the temperature in","Temperature in","What's the weather in")):
                 a=b.index("in")
-                print(b[a + 1::])
-                place=str(b[a + 1::])
-                weather=get_temp.get_current_temperature_place(place)[0]
+                place = ' '.join(b[a+1:]).strip()
+                print(place)
+                weather = get_temp.get_current_temperature_place(place)[0]
                 temperature = get_temp.get_current_temperature_place(place)[1]
-                self.text = f"The current Weather in {place.capitalize()} is {weather} and the Temperature is {temperature} Celsius."
+                self.text = f"The current Weather in {place.capitalize()} is {weather.capitalize()} and the Temperature is {temperature} Celsius."
                 self.main.main_label.setText(self.text)
                 self.speaker(self.text)
 
@@ -210,7 +211,7 @@ class MainWindow(QMainWindow):
                 weather=get_temp.get_current_temperature()[0]
                 temperature=get_temp.get_current_temperature()[1]
                 place=get_temp.get_current_temperature()[2].capitalize()
-                self.text=f"The current Weather in {place} is {weather} and temperature is {temperature} Celsius."
+                self.text=f"The current Weather in {place} is {weather.capitalize()} and temperature is {temperature} Celsius."
                 self.main.main_label.setText(self.text)
                 self.speaker(self.text)
 
@@ -266,11 +267,11 @@ class MainWindow(QMainWindow):
                         break
                     c+=1
 
-            else:
+            '''else:
                 answer = ChatGpt.chat_gpt(audio_rec)
                 self.text = answer
                 self.main.main_label.setText(self.text)
-                self.speaker(self.text)
+                self.speaker(self.text)'''
                 
             
         except sr.UnknownValueError:
