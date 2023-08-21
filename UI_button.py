@@ -15,6 +15,7 @@ import pyjokes
 import datetime
 import cv2
 import time
+import random
 
 from main_window import Ui_MainWindow
 from splash_ui import Ui_SplashScreen
@@ -47,9 +48,9 @@ class SplashScreen(QMainWindow):
         self.timer = QTimer()  # timer for progress bar
         self.timer.timeout.connect(self.update)
         self.timer.start(20)  # timeout for 20 milliseconds
-        QtCore.QTimer.singleShot(0, lambda: self.splash.mic_label.setText("Shubham"))
-        QtCore.QTimer.singleShot(4000, lambda: self.splash.mic_label.setText("Bhavya"))#changes text after given time
-        QtCore.QTimer.singleShot(3000, lambda: self.splash.mic_label.setText("Ashmit"))
+        QtCore.QTimer.singleShot(0, lambda: self.splash.label_2.setText("Shubham"))
+        QtCore.QTimer.singleShot(4000, lambda: self.splash.label_2.setText("Bhavya"))#changes text after given time
+        QtCore.QTimer.singleShot(3000, lambda: self.splash.label_2.setText("Ashmit"))
 
         self.show()
         self.main = MainWindow()
@@ -110,7 +111,9 @@ class MainWindow(QMainWindow):
         self.main.listening_button.pressed.connect(self.listening)
         self.main.help_button.pressed.connect(self.help)
         self.main.help_close.pressed.connect(self.close_commands)
-        self.text = "Hi! What can I do for you?"
+
+        self.l=["Hello, how may I be of service?","Hi! What can I do for you?","Hey, how can I help?","Hi there! Ready to get started?","Ahoy, captain! What's on your mind today?","What can I help you with today?"]
+        self.text=random.choice(self.l)
 
         layout=QStackedLayout()
         layout.addWidget(self.main.help_close)
@@ -135,8 +138,8 @@ class MainWindow(QMainWindow):
         self.main.help_close.hide()
         self.main.gif_label.show()
         self.main.listening_button.show()
-        self.text="Hi! What can I do for you?"
-        #self.main.main_label.setText("Hi! What can I do for you?")
+        self.text=random.choice(self.l)
+        
         
     def listening(self):
         self.main.gif_label.hide()
@@ -180,25 +183,31 @@ class MainWindow(QMainWindow):
         with sr.Microphone() as source:
             try:
                 audio = r.listen(source,timeout=10)
-                time.sleep(1)
                 self.main.mic_label.hide()
                 self.main.gif_label.hide()
                 self.main.listening_button.hide()
-                self.main.speaker_label.show()
 
             except sr.WaitTimeoutError:
                 self.error()
                 return None
         audio_rec=r.recognize_google(audio).capitalize()
         self.text =f"You said: {audio_rec}"
+        time.sleep(2)
         try:
             b = audio_rec.split()
             c = len(b)
+
             if audio_rec.startswith(("direction to","Direction to","directions to","Directions to")):
+                l_2=["Mapping out the details...","Exploring the territories...","Navigating the data...","Calculating the coordinates..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 maps.open_maps(audio_rec[c + 2::].strip())
 
             elif audio_rec.startswith(("What's the temperature in","Temperature in","What's the weather in")):
                 a=b.index("in")
+                l_2=["Checking the skies...","Consulting the weather gods...","Calibrating the weather radar...","Looking out your window..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 place = ' '.join(b[a+1:]).strip()
                 print(place)
                 weather = get_temp.get_current_temperature_place(place)[0]
@@ -208,6 +217,9 @@ class MainWindow(QMainWindow):
                 self.speaker(self.text)
 
             elif audio_rec.startswith(("What's the weather","Temperature","What's the temperature")):
+                l_2=["Checking the skies...","Consulting the weather gods...","Calibrating the weather radar...","Looking out your window..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 weather=get_temp.get_current_temperature()[0]
                 temperature=get_temp.get_current_temperature()[1]
                 place=get_temp.get_current_temperature()[2].capitalize()
@@ -216,11 +228,17 @@ class MainWindow(QMainWindow):
                 self.speaker(self.text)
 
             elif audio_rec.startswith(("Play")) and self.check_os() == "Windows":
+                l_2=["Music vibes loading, enjoy the melody...","Warming up the speakers, hold on...","Setting the stage for your song..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 sw.music_play(audio_rec[1::].strip())
                 self.text = f"Playing {audio_rec[c + 1::]}"
                 self.main.main_label.setText(self.text)
 
             elif audio_rec.startswith(("Play")) and self.check_os() == "macOS":
+                l_2=["Music vibes loading, enjoy the melody...","Warming up the speakers, hold on...","Setting the stage for your song..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 sm.play_song(audio_rec[1::].strip())
                 self.text = f"Playing {self.text[1::]}"
                 self.main.main_label.setText(self.text)
@@ -235,17 +253,25 @@ class MainWindow(QMainWindow):
 
             elif audio_rec.startswith(("Open")):
                 a = audio_rec[c + 1::]
+                self.text="Firing up the app's engines..."
+                time.sleep(2)
                 oa.open_application(audio_rec[c + 1::])
                 self.text = f"Opening {a.capitalize()}"
                 self.main.main_label.setText(self.text)
                 self.speaker(self.text)
 
             elif audio_rec in ("What's the time","Tell me the time"):
+                l_2=["Checking the hourglass of time...","Checking the calendar and the stars...","Clocks are ticking, just a moment...","Time-traveling through data streams...","Syncing with the cosmic clock..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 Time = datetime.datetime.now().strftime("%H:%M:%S")   
                 self.text=f"Current time is {Time}"
                 self.speaker(self.text)
 
             elif audio_rec in ("What's the date""Tell me the date","Today's date"):
+                l_2=["Checking the hourglass of time...","Checking the calendar and the stars...","Clocks are ticking, just a moment...","Time-traveling through data streams...","Syncing with the cosmic clock..."]
+                self.text=random.choice(l_2)
+                time.sleep(2)
                 date = datetime.date.today()  
                 self.text=f"Today's date is {date}"
                 self.speaker(self.text)
@@ -258,6 +284,8 @@ class MainWindow(QMainWindow):
                 ret, frame = cap.read()
                 if not ret:
                     self.text="Failed to capture your picture"
+                self.text="Say Cheese..."
+                time.sleep(1)
                 cap.release()
                 while True:
                     file_path = f"0{str(c)}.jpg"
