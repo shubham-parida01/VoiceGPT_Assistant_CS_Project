@@ -11,12 +11,12 @@ from gtts import gTTS
 import threading
 from threading import Thread
 import os
-import pyjokes
+import jokes
 import datetime
 import cv2
 import time
 import random
-
+import DATABASE
 from main_window import Ui_MainWindow
 from splash_ui import Ui_SplashScreen
 import get_temp
@@ -190,18 +190,18 @@ class MainWindow(QMainWindow):
             except sr.WaitTimeoutError:
                 self.error()
                 return None
-        audio_rec=r.recognize_google(audio).capitalize()
+        audio_rec = r.recognize_google(audio).capitalize()
         self.text =f"You said: {audio_rec}"
         time.sleep(2)
         try:
+            DATABASE.save_prompt(audio_rec)
             b = audio_rec.split()
-            c = len(b)
 
             if audio_rec.startswith(("direction to","Direction to","directions to","Directions to")):
                 l_2=["Mapping out the details...","Exploring the territories...","Navigating the data...","Calculating the coordinates..."]
                 self.text=random.choice(l_2)
                 time.sleep(2)
-                maps.open_maps(audio_rec[c + 2::].strip())
+                maps.open_maps(audio_rec[12::].strip())
 
             elif audio_rec.startswith(("What's the temperature in","Temperature in","What's the weather in")):
                 a=b.index("in")
@@ -209,7 +209,6 @@ class MainWindow(QMainWindow):
                 self.text=random.choice(l_2)
                 time.sleep(2)
                 place = ' '.join(b[a+1:]).strip()
-                print(place)
                 weather = get_temp.get_current_temperature_place(place)[0]
                 temperature = get_temp.get_current_temperature_place(place)[1]
                 self.text = f"The current Weather in {place.capitalize()} is {weather.capitalize()} and the Temperature is {temperature} Celsius."
@@ -231,36 +230,36 @@ class MainWindow(QMainWindow):
                 l_2=["Music vibes loading, enjoy the melody...","Warming up the speakers, hold on...","Setting the stage for your song..."]
                 self.text=random.choice(l_2)
                 time.sleep(2)
-                sw.music_play(audio_rec[1::].strip())
-                self.text = f"Playing {audio_rec[c + 1::]}"
+                sw.music_play(audio_rec[5::].strip())
+                self.text = f"Playing {audio_rec[5::]}"
                 self.main.main_label.setText(self.text)
 
             elif audio_rec.startswith(("Play")) and self.check_os() == "macOS":
                 l_2=["Music vibes loading, enjoy the melody...","Warming up the speakers, hold on...","Setting the stage for your song..."]
                 self.text=random.choice(l_2)
                 time.sleep(2)
-                sm.play_song(audio_rec[1::].strip())
-                self.text = f"Playing {self.text[1::]}"
+                sm.play_song(audio_rec[5::].strip())
+                self.text = f"Playing {audio_rec[5::]}"
                 self.main.main_label.setText(self.text)
 
             elif audio_rec.startswith(("Search")):
-                ws.search_on_google(audio_rec[1::].strip())
+                ws.search_on_google(audio_rec[7::].strip())
 
             elif audio_rec in ("Tell me a joke"):
-                text = pyjokes.get_joke("en","neutral")
+                self.text = jokes.joke()
                 self.main.main_label.setText(self.text)
-                self.speaker(text)
+                self.speaker(self.text)
 
             elif audio_rec.startswith(("Open")):
-                a = audio_rec[c + 1::]
+                a = audio_rec[5::]
                 self.text="Firing up the app's engines..."
                 time.sleep(2)
-                oa.open_application(audio_rec[c + 1::])
+                oa.open_application(audio_rec[5::])
                 self.text = f"Opening {a.capitalize()}"
                 self.main.main_label.setText(self.text)
                 self.speaker(self.text)
 
-            elif audio_rec in ("What's the time","Tell me the time"):
+            elif audio_rec in ("What's the time","Tell me the time","What is the time","What's the time right now","What is the time right now"):
                 l_2=["Checking the hourglass of time...","Checking the calendar and the stars...","Clocks are ticking, just a moment...","Time-traveling through data streams...","Syncing with the cosmic clock..."]
                 self.text=random.choice(l_2)
                 time.sleep(2)
@@ -268,7 +267,7 @@ class MainWindow(QMainWindow):
                 self.text=f"Current time is {Time}"
                 self.speaker(self.text)
 
-            elif audio_rec in ("What's the date""Tell me the date","Today's date"):
+            elif audio_rec in ("What's the date","Tell me the date","Today's date","What is the date","What's today's day","What is today's day"):
                 l_2=["Checking the hourglass of time...","Checking the calendar and the stars...","Clocks are ticking, just a moment...","Time-traveling through data streams...","Syncing with the cosmic clock..."]
                 self.text=random.choice(l_2)
                 time.sleep(2)
@@ -295,11 +294,11 @@ class MainWindow(QMainWindow):
                         break
                     c+=1
 
-            '''else:
+            else:
                 answer = ChatGpt.chat_gpt(audio_rec)
                 self.text = answer
                 self.main.main_label.setText(self.text)
-                self.speaker(self.text)'''
+                self.speaker(self.text)
                 
             
         except sr.UnknownValueError:
@@ -343,18 +342,13 @@ class MainWindow(QMainWindow):
             self.engine.say(s)
             self.engine.runAndWait()
         elif self.check_os() == "macOS":
-            from pydub import AudioSegment
-            from pydub.playback import play
             tts = gTTS(s, lang='en')
             temp_file = "temp.mp3"
             tts.save(temp_file)
-            audio = AudioSegment.from_file(temp_file, format="mp3")
-            play(audio)
+            os.system(f"afplay {temp_file}")
             os.remove(temp_file)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    #window = SplashScreen()
-    main=MainWindow()
-    main.show()
+    window = SplashScreen()
     sys.exit(app.exec())
