@@ -28,4 +28,4 @@ def save_prompt(prompt_text):
     cursor.execute(insert_query, (prompt_text,))
     connection.commit()
 
-save_prompt("capital of india")
+
