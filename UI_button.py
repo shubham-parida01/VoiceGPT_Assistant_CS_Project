@@ -16,7 +16,7 @@ import datetime
 import cv2
 import time
 import random
-
+import DATABASE
 from main_window import Ui_MainWindow
 from splash_ui import Ui_SplashScreen
 import get_temp
