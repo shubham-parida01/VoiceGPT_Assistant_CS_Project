@@ -16,7 +16,7 @@ import datetime
 import cv2
 import time
 import random
-import DATABASE
+
 from main_window import Ui_MainWindow
 from splash_ui import Ui_SplashScreen
 import get_temp
@@ -134,7 +134,6 @@ class MainWindow(QMainWindow):
         self.main.anim.start()
 
     def close_commands(self):
-        self.main.scrollArea.setGeometry(40, 0, 695, 190)
         self.main.help_close.hide()
         self.main.gif_label.show()
         self.main.listening_button.show()
