@@ -22,7 +22,7 @@ multidict==6.0.4
 numpy==1.25.2
 openai==0.27.0
 opencv-python==4.8.0.76
-Pillow==10.0.0
+Pillow==10.2.0
 PyAudio==0.2.13
 PyAutoGUI==0.9.53
 pydub==0.25.1
