@@ -1,6 +1,6 @@
 import openai
 
-openai.api_key = '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'
+openai.api_key = 'sk'
 
 
 def chat_gpt(prompt):
